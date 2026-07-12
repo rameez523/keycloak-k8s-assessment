@@ -1,0 +1,14 @@
+# Terraform
+terraform/.terraform/
+terraform/.terraform.lock.hcl
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+terraform/terraform.tfvars
+terraform/*.tfplan
+
+# Generated kubeconfig (contains cluster client cert/key)
+terraform/.kube/
+
+# OS / editor cruft
+.DS_Store
+*.swp

@@ -1,0 +1,72 @@
+# Reference only -- this is the human-readable equivalent of the values
+# Terraform's keycloak.tf builds and passes to `helm_release`.
+# Not applied directly by deploy.sh (Terraform is the source of truth),
+# but useful if you want to run `helm upgrade --install` manually to
+# compare/debug against what Terraform did:
+#
+#   helm repo add bitnami https://charts.bitnami.com/bitnami
+#   helm install keycloak bitnami/keycloak \
+#     --version 24.0.7 \
+#     --namespace keycloak --create-namespace \
+#     -f manifests/raw-k8s-reference/keycloak-values.yaml \
+#     --set auth.adminPassword='<your-password>' \
+#     --set postgresql.auth.password='<your-postgres-password>'
+
+auth:
+  adminUser: admin
+  # adminPassword: set via --set, or a Secret (auth.existingSecret) -- never commit a real value here
+
+proxy: edge
+httpRelativePath: "/"
+
+containerSecurityContext:
+  enabled: true
+  runAsUser: 1001
+  runAsNonRoot: true
+  allowPrivilegeEscalation: false
+
+podSecurityContext:
+  enabled: true
+  fsGroup: 1001
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 512Mi
+  limits:
+    cpu: "1"
+    memory: 1Gi
+
+service:
+  type: ClusterIP
+
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  hostname: keycloak.local
+  pathType: Prefix
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+  tls: true
+  extraTls:
+    - hosts:
+        - keycloak.local
+      secretName: keycloak-tls
+
+postgresql:
+  enabled: true
+  auth:
+    username: keycloak
+    database: keycloak
+    # password: set via --set, or postgresql.auth.existingSecret
+  primary:
+    containerSecurityContext:
+      runAsUser: 1001
+      runAsNonRoot: true
+    persistence:
+      enabled: true
+      size: 2Gi
+
+metrics:
+  enabled: false

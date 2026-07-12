@@ -1,0 +1,9 @@
+# Copy this file to terraform.tfvars and adjust if you want to override
+# the defaults in variables.tf. Not required to run the assignment as-is.
+
+# cluster_name        = "keycloak-assessment"
+# k3d_agents          = 1
+# namespace           = "keycloak"
+# keycloak_hostname   = "keycloak.local"
+# keycloak_admin_user = "admin"
+# https_node_port     = 443
