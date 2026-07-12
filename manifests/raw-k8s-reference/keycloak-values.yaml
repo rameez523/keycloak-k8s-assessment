@@ -6,7 +6,7 @@
 #
 #   helm repo add bitnami https://charts.bitnami.com/bitnami
 #   helm install keycloak bitnami/keycloak \
-#     --version 24.0.7 \
+#     --version 25.2.0 \
 #     --namespace keycloak --create-namespace \
 #     -f manifests/raw-k8s-reference/keycloak-values.yaml \
 #     --set auth.adminPassword='<your-password>' \

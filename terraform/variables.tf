@@ -35,7 +35,7 @@ variable "keycloak_admin_user" {
 variable "keycloak_chart_version" {
   description = "Pinned Bitnami Keycloak Helm chart version, for reproducible deploys"
   type        = string
-  default     = "24.0.7"
+  default     = "25.2.0"
 }
 
 variable "https_node_port" {
