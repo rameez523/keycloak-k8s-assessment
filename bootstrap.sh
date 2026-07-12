@@ -38,7 +38,38 @@ fi
 # ---------------------------------------------------------------------------
 if ! command -v docker &>/dev/null; then
   log "Installing Docker Engine"
-  curl -fsSL https://get.docker.com | sudo sh
+
+  OS_ID=""
+  OS_VERSION_ID=""
+  if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    OS_ID="${ID:-}"
+    OS_VERSION_ID="${VERSION_ID:-}"
+  fi
+
+  case "$OS_ID" in
+    amzn)
+      if [ "$OS_VERSION_ID" = "2" ]; then
+        sudo amazon-linux-extras install docker -y
+      else
+        sudo dnf install -y docker
+      fi
+      sudo systemctl enable --now docker
+      ;;
+    ubuntu|debian)
+      curl -fsSL https://get.docker.com | sudo sh
+      ;;
+    rhel|centos|rocky|almalinux|fedora)
+      sudo dnf install -y dnf-plugins-core
+      sudo dnf config-manager --add-repo https://download.docker.com/linux/${OS_ID}/docker-ce.repo || true
+      sudo dnf install -y docker-ce docker-ce-cli containerd.io
+      sudo systemctl enable --now docker
+      ;;
+    *)
+      curl -fsSL https://get.docker.com | sudo sh
+      ;;
+  esac
+
   sudo usermod -aG docker "$USER"
   echo "Docker installed. You may need to log out/in (or run 'newgrp docker')"
   echo "for group membership to take effect before running deploy.sh."
