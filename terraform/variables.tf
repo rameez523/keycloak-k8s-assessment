@@ -11,7 +11,7 @@ variable "cluster_name" {
 variable "k3d_agents" {
   description = "Number of k3d worker (agent) nodes, in addition to the 1 server node"
   type        = number
-  default     = 1
+  default     = 0
 }
 
 variable "namespace" {

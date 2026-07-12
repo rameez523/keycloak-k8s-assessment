@@ -33,7 +33,7 @@ resource "null_resource" "k3d_cluster" {
           --port "${var.https_node_port}:443@loadbalancer" \
           --api-port 6550 \
           --k3s-arg "--disable=metrics-server@server:0" \
-          --wait --timeout 120s
+          --wait --timeout 300s
       fi
 
       mkdir -p "${path.module}/.kube"
