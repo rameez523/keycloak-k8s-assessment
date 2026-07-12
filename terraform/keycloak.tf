@@ -21,7 +21,7 @@ resource "random_password" "postgres_password" {
 resource "helm_release" "keycloak" {
   name       = "keycloak"
   namespace  = kubernetes_namespace.keycloak.metadata[0].name
-  repository = "https://charts.bitnami.com/bitnami"
+  repository = "oci://registry-1.docker.io/bitnamicharts"
   chart      = "keycloak"
   version    = var.keycloak_chart_version
 
