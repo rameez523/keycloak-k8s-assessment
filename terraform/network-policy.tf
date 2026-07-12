@@ -41,7 +41,7 @@ resource "kubernetes_network_policy" "allow_ingress_from_traefik" {
           }
         }
       }
-      port {
+      ports {
         port     = 8080
         protocol = "TCP"
       }
@@ -67,11 +67,11 @@ resource "kubernetes_network_policy" "allow_egress_dns" {
           }
         }
       }
-      port {
+      ports {
         port     = 53
         protocol = "UDP"
       }
-      port {
+      ports {
         port     = 53
         protocol = "TCP"
       }
@@ -102,7 +102,7 @@ resource "kubernetes_network_policy" "allow_egress_keycloak_to_postgres" {
           }
         }
       }
-      port {
+      ports {
         port     = 5432
         protocol = "TCP"
       }
@@ -133,7 +133,7 @@ resource "kubernetes_network_policy" "allow_keycloak_to_postgres" {
           }
         }
       }
-      port {
+      ports {
         port     = 5432
         protocol = "TCP"
       }
