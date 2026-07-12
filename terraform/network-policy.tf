@@ -1,9 +1,7 @@
 ############################################
 # network-policy.tf
 # Basic network hardening: deny-all by default in the keycloak namespace,
-# then explicitly allow only the traffic the app actually needs:
-#   - Ingress: from Traefik (kube-system) on the Keycloak HTTP port only
-#   - Egress : DNS resolution, and Postgres within the same namespace
+# then explicitly allow only the traffic the app actually needs.
 ############################################
 
 resource "kubernetes_network_policy" "default_deny_all" {
@@ -105,6 +103,38 @@ resource "kubernetes_network_policy" "allow_egress_keycloak_to_postgres" {
       ports {
         port     = 5432
         protocol = "TCP"
+      }
+    }
+  }
+}
+
+resource "kubernetes_network_policy" "allow_ingress_acme_solver" {
+  # Only needed when Let's Encrypt is enabled: cert-manager's HTTP-01
+  # challenge spins up a temporary solver pod in this same namespace,
+  # which Traefik must be able to reach to complete domain validation.
+  count = var.enable_letsencrypt ? 1 : 0
+
+  metadata {
+    name      = "allow-ingress-acme-solver"
+    namespace = kubernetes_namespace.keycloak.metadata[0].name
+  }
+
+  spec {
+    pod_selector {
+      match_labels = {
+        "acme.cert-manager.io/http01-solver" = "true"
+      }
+    }
+
+    policy_types = ["Ingress"]
+
+    ingress {
+      from {
+        namespace_selector {
+          match_labels = {
+            "kubernetes.io/metadata.name" = "kube-system"
+          }
+        }
       }
     }
   }
