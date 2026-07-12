@@ -216,8 +216,8 @@ production equivalents noted:
 
 | Activity | Hours |
 |---|---|
-| Research and design | | 0.5
-| Terraform and automation scripting | | 1.0
-| Testing and validation | | 1.25
-| Documentation | | 0.25
-| **Total** | | 3.0
+| Research and design | 0.5 |
+| Terraform and automation scripting | 1.0 |
+| Testing and validation | 1.25 |
+| Documentation | 0.25 |
+| **Total** | 3.0 |
