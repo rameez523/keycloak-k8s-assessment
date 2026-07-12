@@ -19,8 +19,14 @@ resource "random_password" "postgres_password" {
 }
 
 resource "helm_release" "keycloak" {
-  name       = "keycloak"
-  namespace  = kubernetes_namespace.keycloak.metadata[0].name
+  name      = "keycloak"
+  namespace = kubernetes_namespace.keycloak.metadata[0].name
+
+  # Bitnami now distributes charts primarily via OCI; pulling "keycloak"
+  # from the classic https://charts.bitnami.com/bitnami repo can fail to
+  # resolve its (also OCI-hosted) bundled PostgreSQL sub-dependency via
+  # Terraform's helm provider ("invalid_reference: invalid tag"). The OCI
+  # path below resolves cleanly.
   repository = "oci://registry-1.docker.io/bitnamicharts"
   chart      = "keycloak"
   version    = var.keycloak_chart_version
@@ -34,6 +40,28 @@ resource "helm_release" "keycloak" {
 
   values = [
     yamlencode({
+      # --- Bitnami image registry workaround -------------------------
+      # Since Aug 2025, Bitnami only publishes the "latest" tag to the
+      # free docker.io/bitnami/* org; specific version tags (which this
+      # chart references, e.g. keycloak:26.3.3-debian-12-r0) 404. Bitnami's
+      # documented workaround is to pull the same frozen images from the
+      # docker.io/bitnamilegacy/* org instead, and set
+      # global.security.allowInsecureImages=true so the chart doesn't
+      # reject the registry mismatch.
+      global = {
+        security = {
+          allowInsecureImages = true
+        }
+      }
+      image = {
+        repository = "bitnamilegacy/keycloak"
+      }
+      volumePermissions = {
+        image = {
+          repository = "bitnamilegacy/os-shell"
+        }
+      }
+
       auth = {
         adminUser     = var.keycloak_admin_user
         adminPassword = random_password.keycloak_admin.result
@@ -49,10 +77,10 @@ resource "helm_release" "keycloak" {
 
       # --- Security hardening ---------------------------------------
       containerSecurityContext = {
-        enabled                = true
-        runAsUser               = 1001
+        enabled                  = true
+        runAsUser                = 1001
         runAsNonRoot             = true
-        readOnlyRootFilesystem  = false
+        readOnlyRootFilesystem   = false
         allowPrivilegeEscalation = false
       }
       podSecurityContext = {
@@ -92,6 +120,19 @@ resource "helm_release" "keycloak" {
       # --- Bundled PostgreSQL (persistence for realms/users) ----------
       postgresql = {
         enabled = true
+        image = {
+          repository = "bitnamilegacy/postgresql"
+        }
+        volumePermissions = {
+          image = {
+            repository = "bitnamilegacy/os-shell"
+          }
+        }
+        metrics = {
+          image = {
+            repository = "bitnamilegacy/postgres-exporter"
+          }
+        }
         auth = {
           username = "keycloak"
           password = random_password.postgres_password.result
