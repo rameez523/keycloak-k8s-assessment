@@ -106,13 +106,42 @@ providers require a kubeconfig file that only exists once the cluster is
 created. The second `apply` deploys Keycloak, its TLS certificate, and
 the network policies into the running cluster.
 
+## Deployment Verification
+
+The following captures document a complete run of the setup procedure
+described above.
+
+**Tooling installation** (`bootstrap.sh`)
+
+![Bootstrap installation](docs/screenshots/01-bootstrap-install.png)
+
+**Tool versions confirmed**
+
+![Tool versions](docs/screenshots/02-tool-versions-verified.png)
+
+**Cluster provisioning** (`terraform apply`)
+
+![Cluster provisioning](docs/screenshots/03-terraform-cluster-provisioning.png)
+
+**All workloads running** (Keycloak, PostgreSQL, cert-manager, Traefik)
+
+![Pods running](docs/screenshots/04-kubectl-pods-running.png)
+
+**Ingress configured** (Traefik routing HTTP/HTTPS to Keycloak)
+
+![Ingress verified](docs/screenshots/05-ingress-verified.png)
+
+**Keycloak Administration Console**
+
+![Keycloak admin console](docs/screenshots/06-keycloak-admin-console.png)
+
 ## Accessing Keycloak
 
 By default, Keycloak is exposed on port 443 of the host running the
 cluster, using the hostname configured in `terraform/variables.tf`
 (`keycloak_hostname`, default `keycloak.local`). Point this hostname at
 the host running the cluster and access the console at
-`https://<hostname>/`.
+`https://keycloak.13.250.202.227.nip.io`.
 
 For a certificate issued by a public Certificate Authority instead of a
 self-signed one, see [Let's Encrypt Integration](#lets-encrypt-integration).
@@ -197,6 +226,30 @@ Traefik ingress rather than within the Keycloak container, which is the
 standard pattern for Kubernetes ingress-based TLS and aligns with
 Keycloak's own recommended reverse-proxy configuration.
 
+## Assumptions and Prerequisites
+
+- Terraform and Git are pre-installed on the target host, per the
+  assignment's stated environment.
+- The target host has outbound internet access, to pull container images,
+  Helm charts, and the k3s distribution itself.
+- The target host provides a minimum of 2 vCPU and 4GB RAM. Kubernetes'
+  control plane, Traefik, Keycloak, and PostgreSQL collectively require
+  more resources than a minimal (1 vCPU / 1GB) instance provides.
+- Docker, `kubectl`, `k3d`, and Helm are not assumed to be pre-installed;
+  `bootstrap.sh` installs each if missing.
+- The deployment is single-node and intended for local development or
+  assessment purposes rather than production use; see
+  [Assumptions and Scope](#assumptions-and-scope) for the specific
+  production capabilities intentionally out of scope.
+- Access to the Keycloak console assumes the configured hostname
+  (`keycloak_hostname` in `terraform/variables.tf`) resolves to the host
+  running the cluster, and that port 443 is reachable from the client
+  used to access it.
+- If the optional Let's Encrypt certificate path is used, a valid,
+  reachable email address and a publicly resolvable hostname are
+  required, and port 80 must be reachable from the public internet for
+  certificate validation.
+
 ## Assumptions and Scope
 
 This deployment is scoped as a self-contained local assessment
@@ -220,4 +273,4 @@ production equivalents noted:
 | Terraform and automation scripting | 1.0 |
 | Testing and validation | 1.25 |
 | Documentation | 0.25 |
-| **Total** | 3.0 |
+| **Total** | **3.0** |
